@@ -133,6 +133,7 @@
 %% @end
 -module(setup).
 -behaviour(application).
+-behaviour(supervisor).
 
 -export([start/2,
          stop/1]).
@@ -171,8 +172,16 @@
 %% @doc Application start function.
 %% @end
 %%
-start(_, Args) ->
-    proc_lib:start_link(?MODULE, run_setup, [self(), Args]).
+start(_, _Args) ->
+    start_link().%%?MODULE, run_setup, [self(), Args]).
+
+start_link() ->
+  supervisor:start_link({local, ?MODULE}, ?MODULE, []).
+
+init([]) ->
+  proc_lib:start_link(?MODULE, run_setup, [self(), []]),
+  {ok, {{one_for_one, 5, 10}, []}}.
+
 
 %% @spec stop(State) -> ok
 %% @doc Application stop function
